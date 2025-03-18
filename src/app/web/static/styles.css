@@ -1,0 +1,313 @@
+/* Primary theme color */
+:root {
+    --primary-color: #A855F7;
+    --secondary-color: #8B5CF6;
+    --background-color: #1E1E1E;
+    --secondary-bg: #2E2E2E;
+    --text-color: #EAEAEA;
+    --border-color: rgba(168, 85, 247, 0.4);
+}
+
+/* Main styling */
+.main-header {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+
+.sub-header {
+    font-size: 1.7rem;
+    color: var(--text-color);
+    margin-top: 1.5rem;
+    margin-bottom: 1.2rem;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+/* Button styling */
+.stButton>button {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border-radius: 6px !important;
+    padding: 0.6rem 1.2rem !important;
+    font-weight: 600 !important;
+    border: none !important;
+    width: 100% !important;
+    transition: all 0.3s ease !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stButton>button:hover {
+    background-color: var(--secondary-color) !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Submit button specifically */
+[data-testid="oracle_form"] .stButton>button {
+    font-size: 1.1rem !important;
+    margin-top: 1rem !important;
+    background-color: var(--primary-color) !important;
+}
+
+/* Input form elements */
+.stTextInput>div>div>input {
+    border-radius: 6px;
+    border: 1px solid var(--border-color) !important;
+    padding: 1rem !important;
+}
+
+.stSelectbox>div>div>div {
+    border-radius: 6px;
+    border: 1px solid var(--border-color) !important;
+}
+
+.stExpander {
+    border-radius: 6px !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.stForm {
+    background-color: var(--secondary-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* CSS that can't be handled by config.toml */
+
+/* Number input spinner removal - can't be done in config.toml */
+input[type="number"]::-webkit-inner-spin-button, 
+input[type="number"]::-webkit-outer-spin-button { 
+    -webkit-appearance: none !important; 
+    margin: 0 !important; 
+}
+
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+/* Target all possible spinner button selectors */
+.stNumberInput div[data-baseweb] button,
+[data-testid="stNumberInput"] button,
+button[aria-label*="value"],
+div[data-baseweb="input"] ~ div > div > div > button,
+div[data-baseweb="input-spinner"] button,
+.st-bd div[data-testid="stNumberInput"] button,
+div[data-testid="stNumberInput"] div[role="button"],
+[data-testid="InputIncrementDecrementButtons"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+}
+
+/* Hide the parent container of spinner buttons */
+div[data-baseweb="input-spinner"] {
+    display: none !important;
+}
+
+/* Fixed positioning - can't be done in config.toml */
+.sidebar-footer {
+    position: fixed;
+    bottom: 55px;
+    left: 1rem;
+    width: calc(100% - 2rem);
+    max-width: 17rem;
+    background-color: var(--secondary-bg);
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+    text-align: left;
+    z-index: 998;
+    border-radius: 6px 6px 0 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.sidebar-footer p {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.logout-container {
+    position: fixed;
+    bottom: 15px;
+    left: 1rem;
+    width: calc(100% - 2rem);
+    max-width: 17rem;
+    padding: 0.5rem 0;
+    z-index: 999;
+}
+
+/* Custom prediction sections */
+.prediction-section {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--primary-color);
+    background-color: var(--secondary-bg);
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.prediction-section:hover {
+    transform: translateX(3px);
+}
+
+.prediction-title {
+    color: var(--primary-color);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+/* Line Change image sizing */
+.line-change-image {
+    max-height: 300px;
+    width: auto;
+    margin: 0 auto 1rem;
+    display: block;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Login/Signup form styling */
+[data-testid="stExpander"] {
+    background-color: var(--secondary-bg);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Improved tabs styling */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 2px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background-color: var(--secondary-bg);
+    border-radius: 6px 6px 0 0;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+/* Error and success messages styling */
+.stAlert {
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+/* Make sure dark mode text is readable */
+p, span, div, label {
+    color: var(--text-color);
+}
+
+/* Section styling with different colors */
+.hexagram-title { color: #A5B4FC; }
+.summary-text { color: #A7F3D0; }
+.interpretation-text { color: #F3F4F6; }
+.line-change-text { color: #FCD34D; }
+
+/* Query section styling */
+.query-section {
+    background-color: #262626;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Improved button styling */
+div.stButton > button {
+    width: 100%;
+    background-color: #8B5CF6 !important;
+    color: white !important;
+    border-radius: 5px !important;
+    padding: 10px !important;
+    transition: 0.3s !important;
+}
+div.stButton > button:hover {
+    background-color: #6D28D9 !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Profile section styling */
+.profile-section {
+    padding: 10px;
+    background-color: #2E2E2E;
+    border-radius: 5px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Prediction section styling */
+.prediction-header {
+    border-left: 4px solid #A855F7;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+/* Welcome message styling */
+.welcome-message {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .main-header { font-size: 1.8rem !important; }
+    .sub-header { font-size: 1.4rem !important; }
+}
+
+/* Custom purple theme boxes */
+.purple-box {
+    background-color: rgba(168, 85, 247, 0.15);
+    border-left: 4px solid #A855F7;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.light-purple-box {
+    background-color: rgba(139, 92, 246, 0.1);
+    border-left: 4px solid #8B5CF6;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Bottom sidebar elements */
+.sidebar-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-width: 17rem; /* Adjust based on Streamlit's sidebar width */
+    background-color: #1E1E1E;
+    padding: 1rem;
+    z-index: 999;
+    border-top: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+/* Add padding to the bottom of the sidebar to prevent content overlap */
+section[data-testid="stSidebar"] > div {
+    padding-bottom: 120px; /* Adjust based on the height of your bottom elements */
+} 

@@ -1,8 +1,9 @@
-from typing import Any
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel
 
 
+# These models are kept for reference but not used directly in IChingOutput anymore
 class HexagramResult(BaseModel):
     """Represents the resulting hexagram interpretation."""
 
@@ -19,7 +20,7 @@ class LineChange(BaseModel):
 
 class IChingOutput(BaseModel):
     """
-    Represents a hexagram in the I Ching, including its name, meaning, and investment advice.
+    Represents a hexagram in the I Ching, including its name, meaning, and advice.
     """
 
     hexagram_name: str
@@ -28,3 +29,4 @@ class IChingOutput(BaseModel):
     line_change: LineChange
     result: HexagramResult
     advice: str
+    image_path: Optional[str] = None

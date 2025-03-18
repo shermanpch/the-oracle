@@ -39,23 +39,44 @@ def get_api_key(source: str = "env") -> str:
 
 
 SYSTEM_PROMPT_FILE = os.path.join(os.path.dirname(__file__), "system_prompt.txt")
+CLARIFICATION_PROMPT_FILE = os.path.join(
+    os.path.dirname(__file__), "clarification_prompt.txt"
+)
 
 
-def load_system_prompt() -> str:
+def load_system_prompt(prompt_type: str = "system") -> str:
     """
-    Load the system prompt from an external file.
+    Load a prompt from an external file.
+
+    Parameters:
+        prompt_type (str): The type of prompt to load.
+                          "system" for the main system prompt,
+                          "clarification" for the clarification prompt.
 
     Returns:
-        str: The system prompt.
-    """
-    if not os.path.exists(SYSTEM_PROMPT_FILE):
-        raise FileNotFoundError(f"System prompt file '{SYSTEM_PROMPT_FILE}' not found.")
+        str: The requested prompt.
 
-    with open(SYSTEM_PROMPT_FILE, "r") as f:
+    Raises:
+        ValueError: If an invalid prompt type is specified.
+        FileNotFoundError: If the prompt file doesn't exist.
+    """
+    if prompt_type == "system":
+        prompt_file = SYSTEM_PROMPT_FILE
+    elif prompt_type == "clarification":
+        prompt_file = CLARIFICATION_PROMPT_FILE
+    else:
+        raise ValueError(
+            f"Invalid prompt type: {prompt_type}. Valid types are 'system' and 'clarification'."
+        )
+
+    if not os.path.exists(prompt_file):
+        raise FileNotFoundError(f"Prompt file '{prompt_file}' not found.")
+
+    with open(prompt_file, "r") as f:
         return f.read()
 
 
-def query_llm(
+def get_reading_from_llm(
     user_input: str,
     parent_content: str,
     child_content: str,
@@ -79,11 +100,8 @@ def query_llm(
 
     Returns:
         IChingOutput: The parsed LLM response.
-
-    Raises:
-        Exception: Propagates any exceptions raised during the LLM query or parsing process.
     """
-    system_prompt_template = load_system_prompt()
+    system_prompt_template = load_system_prompt(prompt_type="system")
 
     system_prompt = system_prompt_template.format(
         language=language,
@@ -103,5 +121,47 @@ def query_llm(
         response_format=IChingOutput,
     )
 
-    event = response.choices[0].message.parsed
-    return event
+    parsed_response = response.choices[0].message.parsed
+    return parsed_response
+
+
+def get_follow_up_from_llm(
+    conversation_history: list,
+    follow_up_question: str,
+    api_source: str = "env",
+) -> str:
+    """
+    Continue a conversation with the LLM using the conversation history and return a text response.
+
+    This function is used to ask follow-up clarifying questions after an initial I Ching reading.
+    It maintains the conversation context by including the previous messages.
+
+    Parameters:
+        system_prompt (str): The system prompt used in the initial conversation.
+        conversation_history (list): List of message dictionaries from previous interactions.
+        follow_up_question (str): The user's follow-up question.
+        api_source (str): Source to load the API key ("env" or "streamlit"). Defaults to "env".
+
+    Returns:
+        str: The LLM's response as free text (not in IChingOutput format).
+
+    Raises:
+        Exception: Propagates any exceptions raised during the LLM query process.
+    """
+    OPENAI_API_KEY = get_api_key(source=api_source)
+    client = OpenAI(api_key=OPENAI_API_KEY)
+
+    system_prompt = load_system_prompt(prompt_type="clarification")
+
+    messages = [
+        {
+            "role": "system",
+            "content": system_prompt,
+        },
+    ]
+
+    messages.extend(conversation_history)
+    messages.append({"role": "user", "content": follow_up_question})
+    response = client.chat.completions.create(model="gpt-4o", messages=messages)
+    response_text = response.choices[0].message.content
+    return response_text

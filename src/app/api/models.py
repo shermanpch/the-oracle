@@ -5,9 +5,9 @@ This module contains Pydantic models that define the structure of requests and r
 in the API, ensuring proper data validation and documentation.
 """
 
-from typing import Any, Dict, Optional
-
 from pydantic import BaseModel
+
+from src.app.core.output import IChingOutput
 
 
 class OracleRequest(BaseModel):
@@ -20,40 +20,30 @@ class OracleRequest(BaseModel):
     language: str = "English"
 
 
-class HexagramResult(BaseModel):
-    """Represents the resulting hexagram interpretation."""
+class OracleResponse(IChingOutput):
+    """Response model for the Oracle API, inheriting from IChingOutput."""
 
-    name: str
-    interpretation: str
-
-
-class LineChange(BaseModel):
-    """Represents a specific changing line in the hexagram."""
-
-    line: str
-    interpretation: str
+    pass
 
 
-class IChingOutput(BaseModel):
+class UpdateReadingRequest(BaseModel):
+    """Request model for updating a reading with clarifying questions and answers."""
+
+    reading_id: str
+    clarifying_question: str
+    clarifying_answer: str
+
+
+class FollowUpRequest(BaseModel):
+    """Request model for follow-up questions about previous readings."""
+
+    question: str
+    conversation_history: list[dict[str, str]]
+
+
+class UpdateUserQuotaRequest(BaseModel):
     """
-    Represents a hexagram in the I Ching, including its name, meaning, and investment advice.
+    Request model for updating user quota information.
     """
 
-    hexagram_name: str
-    summary: str
-    interpretation: str
-    line_change: LineChange
-    result: HexagramResult
-    advice: str
-
-
-class OracleResponse(BaseModel):
-    """Response model for the Oracle API."""
-
-    hexagram_name: str
-    summary: str
-    interpretation: str
-    line_change: Dict[str, Any]
-    result: Dict[str, Any]
-    advice: str
-    image_path: Optional[str] = None
+    membership_type: str  # "free" or "premium"
