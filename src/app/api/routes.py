@@ -147,14 +147,14 @@ async def get_oracle_reading(
 
         # Get the content from the parent and child directories
         logger.debug(
-            f"[Request {request_id}] Fetching parent content from {oracle.get_parent_directory()}"
+            f"[Request {request_id}] Fetching parent text for coordinates {oracle.get_parent_directory()}"
         )
-        parent_content = oracle.get_txt_file(oracle.get_parent_directory())
+        parent_content = oracle.get_parent_text()
 
         logger.debug(
-            f"[Request {request_id}] Fetching child content from {oracle.get_child_directory()}"
+            f"[Request {request_id}] Fetching child text for coordinates {oracle.get_parent_directory()}/{oracle.get_child_directory()}"
         )
-        child_content = oracle.get_txt_file(oracle.get_child_directory())
+        child_content = oracle.get_child_text()
 
         # Get the image path
         logger.debug(

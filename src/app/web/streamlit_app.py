@@ -27,8 +27,10 @@ import streamlit as st
 from src.app.web.utils.api import make_api_request
 from src.app.web.utils.components import (
     display_auth_section,
+    display_change_password_section,
     display_clarifying_qa,
     display_prediction_markdown,
+    display_reset_password_form,
     display_sidebar_welcome,
     display_welcome_message,
 )
@@ -56,6 +58,67 @@ def main():
 
     # Initialize session state variables
     initialize_session_state()
+
+    # Check URL fragment for password reset parameters
+    # Streamlit doesn't directly parse URL fragments (#), so we need to handle them through page reloads
+    # Check if this is a recovery flow based on session state
+    if "recovery_mode" not in st.session_state:
+        st.session_state.recovery_mode = False
+
+    # Add a script to detect fragment parameters and convert them to query parameters
+    st.markdown(
+        """
+        <script>
+            // Function to extract URL fragment parameters
+            function getFragmentParams() {
+                const hash = window.location.hash.substring(1);
+                if (!hash) return null;
+                
+                const params = {};
+                const fragments = hash.split('&');
+                for (const fragment of fragments) {
+                    const [key, value] = fragment.split('=');
+                    params[key] = decodeURIComponent(value);
+                }
+                return params;
+            }
+            
+            // Check if this is a recovery link
+            const params = getFragmentParams();
+            if (params && params.type === 'recovery' && params.access_token) {
+                // Convert fragment to query parameters for Streamlit to process
+                const searchParams = new URLSearchParams();
+                searchParams.set('type', 'recovery');
+                searchParams.set('token', params.access_token);
+                searchParams.set('email', params.email || '');
+                
+                // Redirect to same page but with query parameters instead of fragment
+                window.location.href = window.location.pathname + '?' + searchParams.toString();
+            }
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Check for password reset parameters in URL
+    if (
+        "type" in st.query_params
+        and st.query_params["type"] == "recovery"
+        and "token" in st.query_params
+    ):
+        token = st.query_params["token"]
+        email = st.query_params.get("email", "your account")
+
+        st.markdown(
+            '<h1 class="main-header">🔮 The Oracle - I Ching Interpreter</h1>',
+            unsafe_allow_html=True,
+        )
+
+        # Display the password reset form
+        display_reset_password_form(supabase, token, email)
+
+        # Early return to prevent showing the rest of the app
+        return
 
     st.markdown(
         '<h1 class="main-header">🔮 The Oracle - I Ching Interpreter</h1>',
@@ -526,6 +589,15 @@ def main():
                     st.error(
                         "❌ You have no queries remaining. Please upgrade your membership to continue using the Oracle."
                     )
+
+                # Change Password Section
+                display_change_password_section(supabase, st.session_state.access_token)
+
+                # Add a separator
+                st.markdown(
+                    '<hr style="border-color: rgba(168, 85, 247, 0.4); margin: 2rem 0 1rem 0;">',
+                    unsafe_allow_html=True,
+                )
 
                 # Add upgrade button for free users
                 if user_quota.get("membership_type") == "free":

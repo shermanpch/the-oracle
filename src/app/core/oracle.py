@@ -77,35 +77,79 @@ class Oracle:
                 raise FileNotFoundError(f"Child directory {child_dir} not found.")
             return child_dir
         else:
-            # Return the full identifier for Supabase
-            return f"{self.get_parent_directory()}/{self.third_cord}"
+            # Return just the child coord number for Supabase
+            return str(self.third_cord)
 
-    def get_txt_file(self, directory):
+    def get_parent_text(self):
         """
-        Retrieve and read the contents of text data from local files or Supabase.
+        Retrieve and read the parent text from local files or Supabase.
         """
         if self.data_source == "local":
-            # Original local file logic
-            file_path = os.path.join(directory, "html", "body.txt")
+            # Local file logic for parent text
+            parent_dir = self.get_parent_directory()
+            file_path = os.path.join(parent_dir, "html", "body.txt")
             if not os.path.exists(file_path):
-                raise FileNotFoundError(f"'body.txt' not found in {file_path}.")
+                raise FileNotFoundError(f"Parent text file not found at {file_path}.")
 
             with open(file_path, "r", encoding="utf-8") as file:
-                content = file.read()
+                return file.read()
         else:
-            # Supabase logic - fetch from the 'iching_texts' table
+            # Supabase logic - fetch parent_text from the 'iching_texts' table
             try:
+                parent_coord = self.get_parent_directory()
+                child_coord = self.get_child_directory()
+
                 response = (
                     self.supabase.table("iching_texts")
-                    .select("content")
-                    .eq("parent_coord", self.get_parent_directory())
-                    .eq("child_coord", self.get_child_directory())
+                    .select("parent_text")
+                    .eq("parent_coord", parent_coord)
+                    .eq("child_coord", child_coord)
                     .execute()
                 )
+
                 if response.data and len(response.data) > 0:
-                    return response.data[0]["content"]
+                    return response.data[0]["parent_text"]
+                else:
+                    print(f"No parent text found for {parent_coord}/{child_coord}")
+                    return None
             except Exception as e:
-                print(f"Error fetching from Supabase: {e}")
+                print(f"Error fetching parent text from Supabase: {e}")
+                return None
+
+    def get_child_text(self):
+        """
+        Retrieve and read the child text from local files or Supabase.
+        """
+        if self.data_source == "local":
+            # Local file logic for child text
+            child_dir = self.get_child_directory()
+            file_path = os.path.join(child_dir, "html", "body.txt")
+            if not os.path.exists(file_path):
+                raise FileNotFoundError(f"Child text file not found at {file_path}.")
+
+            with open(file_path, "r", encoding="utf-8") as file:
+                return file.read()
+        else:
+            # Supabase logic - fetch child_text from the 'iching_texts' table
+            try:
+                parent_coord = self.get_parent_directory()
+                child_coord = self.get_child_directory()
+
+                response = (
+                    self.supabase.table("iching_texts")
+                    .select("child_text")
+                    .eq("parent_coord", parent_coord)
+                    .eq("child_coord", child_coord)
+                    .execute()
+                )
+
+                if response.data and len(response.data) > 0:
+                    return response.data[0]["child_text"]
+                else:
+                    print(f"No child text found for {parent_coord}/{child_coord}")
+                    return None
+            except Exception as e:
+                print(f"Error fetching child text from Supabase: {e}")
                 return None
 
     def get_image_path(self, directory):
@@ -114,7 +158,7 @@ class Oracle:
         """
         if self.data_source == "local":
             # Original local file logic
-            image_path = os.path.join(directory, "images", "image.jpg")
+            image_path = os.path.join(directory, "images", "hexagram.jpg")
             if not os.path.exists(image_path):
                 raise FileNotFoundError(f"Image file not found in {image_path}.")
             return image_path
@@ -122,10 +166,10 @@ class Oracle:
             # For Supabase, return the URL to the image in Storage
             try:
                 bucket_name = "iching-images"
-                # Fix the path construction - child_coord is just the number
-                image_path = (
-                    f"{self.first_cord}-{self.second_cord}/{self.third_cord}/image.jpg"
-                )
+                parent_coord = self.get_parent_directory()
+                child_coord = self.get_child_directory()
+                image_path = f"{parent_coord}/{child_coord}/hexagram.jpg"
+
                 response = self.supabase.storage.from_(bucket_name).get_public_url(
                     image_path
                 )

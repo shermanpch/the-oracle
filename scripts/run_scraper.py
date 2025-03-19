@@ -137,6 +137,8 @@ def process_hexagram(coordinate_info):
     if not title_divs or not body_divs:
         return [f"No content found for hexagram {hex_name} at {url}"]
 
+    parent_coord = f"{coordinate[0]}-{coordinate[1]}"
+
     for idx, (title_div, body_div) in enumerate(zip(title_divs, body_divs)):
         title_text = title_div.get_text(separator="\n", strip=True)
         body_text = body_div.get_text(separator="\n", strip=True)
@@ -145,33 +147,38 @@ def process_hexagram(coordinate_info):
         img_tag = body_div.find("img")
         img_url = img_tag["src"] if img_tag else None
 
-        # Check if the coordinate has a third element (changing line) - handles both types of tuples
-        has_changing_line = len(coordinate) > 2 and coordinate[2] is not None
-
-        if has_changing_line:
-            folder = os.path.join("data", f"{coordinate[0]}-{coordinate[1]}", "images")
-            img_folder = folder
+        if idx == 0:
+            # Parent text
+            folder = os.path.join("data", parent_coord, "html")
         else:
-            folder = os.path.join(
-                "data", f"{coordinate[0]}-{coordinate[1]}", str(idx % 6), "html"
-            )
-            img_folder = os.path.join(
-                "data", f"{coordinate[0]}-{coordinate[1]}", str(idx % 6), "images"
-            )
+            # Child text
+            child_coord = idx % 6
+            folder = os.path.join("data", parent_coord, str(child_coord), "html")
 
         os.makedirs(folder, exist_ok=True)
-        os.makedirs(img_folder, exist_ok=True)
 
         file_path = os.path.join(folder, "body.txt")
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(combined)
 
-        results.append(f"Saved {hex_name} body {idx} to {file_path}")
+        results.append(
+            f"Saved {hex_name} {'parent' if idx == 0 else 'child ' + str(idx % 6)} text to {file_path}"
+        )
 
         if img_url:
-            img_path = os.path.join(img_folder, "image.jpg")
-            img_result = download_image(img_url, img_path)
-            results.append(img_result)
+            if idx == 0:
+                # No images for parent
+                pass
+            else:
+                # Images for child
+                child_coord = idx % 6
+                img_folder = os.path.join(
+                    "data", parent_coord, str(child_coord), "images"
+                )
+                os.makedirs(img_folder, exist_ok=True)
+                img_path = os.path.join(img_folder, "hexagram.jpg")
+                img_result = download_image(img_url, img_path)
+                results.append(img_result)
 
     return results
 

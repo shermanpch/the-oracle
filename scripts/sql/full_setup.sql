@@ -4,10 +4,10 @@
 -- 1. Create the iching_texts table
 CREATE TABLE IF NOT EXISTS iching_texts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    path TEXT,
     parent_coord TEXT NOT NULL,
     child_coord TEXT NOT NULL,
-    content TEXT NOT NULL,
+    parent_text TEXT,
+    child_text TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(parent_coord, child_coord)
 );
