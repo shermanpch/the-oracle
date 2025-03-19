@@ -59,66 +59,89 @@ def main():
     # Initialize session state variables
     initialize_session_state()
 
-    # Check URL fragment for password reset parameters
-    # Streamlit doesn't directly parse URL fragments (#), so we need to handle them through page reloads
-    # Check if this is a recovery flow based on session state
-    if "recovery_mode" not in st.session_state:
-        st.session_state.recovery_mode = False
-
-    # Add a script to detect fragment parameters and convert them to query parameters
+    # JavaScript to convert URL fragment (#) to query parameters (?)
     st.markdown(
         """
         <script>
-            // Function to extract URL fragment parameters
-            function getFragmentParams() {
+            (function() {
+                // Extract URL fragment parameters
                 const hash = window.location.hash.substring(1);
-                if (!hash) return null;
-                
+                if (!hash) return;
+
                 const params = {};
                 const fragments = hash.split('&');
                 for (const fragment of fragments) {
                     const [key, value] = fragment.split('=');
                     params[key] = decodeURIComponent(value);
                 }
-                return params;
-            }
-            
-            // Check if this is a recovery link
-            const params = getFragmentParams();
-            if (params && params.type === 'recovery' && params.access_token) {
-                // Convert fragment to query parameters for Streamlit to process
-                const searchParams = new URLSearchParams();
-                searchParams.set('type', 'recovery');
-                searchParams.set('token', params.access_token);
-                searchParams.set('email', params.email || '');
-                
-                // Redirect to same page but with query parameters instead of fragment
-                window.location.href = window.location.pathname + '?' + searchParams.toString();
-            }
+
+                // Check if this is a recovery link
+                if (params.type === 'recovery' && params.access_token) {
+                    // Convert fragment to query parameters for Streamlit
+                    const searchParams = new URLSearchParams(window.location.search);
+
+                    searchParams.set('type', 'recovery');
+                    searchParams.set('token', params.access_token);
+                    if (params.email) searchParams.set('email', params.email);
+
+                    // Prevent infinite redirects
+                    if (!window.location.search.includes("type=recovery")) {
+                        window.location.replace(window.location.pathname + '?' + searchParams.toString());
+                    }
+                }
+            })();
         </script>
         """,
         unsafe_allow_html=True,
     )
 
-    # Check for password reset parameters in URL
-    if (
-        "type" in st.query_params
-        and st.query_params["type"] == "recovery"
-        and "token" in st.query_params
-    ):
-        token = st.query_params["token"]
-        email = st.query_params.get("email", "your account")
+    # Extract query parameters
+    query_params = st.query_params
 
+    # Handle password reset logic
+    if (
+        "type" in query_params
+        and query_params["type"][0] == "recovery"
+        and "token" in query_params
+    ):
+        token = query_params["token"][0]
+        email = query_params.get("email", ["your account"])[0]
+
+        # Display Reset Page UI
         st.markdown(
             '<h1 class="main-header">🔮 The Oracle - I Ching Interpreter</h1>',
             unsafe_allow_html=True,
         )
+        st.subheader("Reset Your Password")
+
+        # Function to display the reset password form
+        def display_reset_password_form(supabase, token, email):
+            new_password = st.text_input("Enter new password", type="password")
+            confirm_password = st.text_input("Confirm new password", type="password")
+
+            if st.button("Reset Password"):
+                if new_password and confirm_password:
+                    if new_password == confirm_password:
+                        # Call Supabase to update password
+                        response = supabase.auth.api.update_user(
+                            token, {"password": new_password}
+                        )
+                        if response.get("error"):
+                            st.error("Error resetting password. Try again.")
+                        else:
+                            st.success(
+                                "Password reset successfully! You can now log in."
+                            )
+                    else:
+                        st.error("Passwords do not match!")
+                else:
+                    st.warning("Please enter your new password.")
 
         # Display the password reset form
         display_reset_password_form(supabase, token, email)
 
-        # Early return to prevent showing the rest of the app
-        return
+        # Stop execution to prevent showing the rest of the app
+        st.stop()
 
     st.markdown(
         '<h1 class="main-header">🔮 The Oracle - I Ching Interpreter</h1>',
