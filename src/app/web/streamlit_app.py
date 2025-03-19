@@ -30,7 +30,6 @@ from src.app.web.utils.components import (
     display_change_password_section,
     display_clarifying_qa,
     display_prediction_markdown,
-    display_reset_password_form,
     display_sidebar_welcome,
     display_welcome_message,
 )
@@ -58,90 +57,6 @@ def main():
 
     # Initialize session state variables
     initialize_session_state()
-
-    # JavaScript to convert URL fragment (#) to query parameters (?)
-    st.markdown(
-        """
-        <script>
-            (function() {
-                // Extract URL fragment parameters
-                const hash = window.location.hash.substring(1);
-                if (!hash) return;
-
-                const params = {};
-                const fragments = hash.split('&');
-                for (const fragment of fragments) {
-                    const [key, value] = fragment.split('=');
-                    params[key] = decodeURIComponent(value);
-                }
-
-                // Check if this is a recovery link
-                if (params.type === 'recovery' && params.access_token) {
-                    // Convert fragment to query parameters for Streamlit
-                    const searchParams = new URLSearchParams(window.location.search);
-
-                    searchParams.set('type', 'recovery');
-                    searchParams.set('token', params.access_token);
-                    if (params.email) searchParams.set('email', params.email);
-
-                    // Prevent infinite redirects
-                    if (!window.location.search.includes("type=recovery")) {
-                        window.location.replace(window.location.pathname + '?' + searchParams.toString());
-                    }
-                }
-            })();
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # Extract query parameters
-    query_params = st.query_params
-
-    # Handle password reset logic
-    if (
-        "type" in query_params
-        and query_params["type"][0] == "recovery"
-        and "token" in query_params
-    ):
-        token = query_params["token"][0]
-        email = query_params.get("email", ["your account"])[0]
-
-        # Display Reset Page UI
-        st.markdown(
-            '<h1 class="main-header">🔮 The Oracle - I Ching Interpreter</h1>',
-            unsafe_allow_html=True,
-        )
-        st.subheader("Reset Your Password")
-
-        # Function to display the reset password form
-        def display_reset_password_form(supabase, token, email):
-            new_password = st.text_input("Enter new password", type="password")
-            confirm_password = st.text_input("Confirm new password", type="password")
-
-            if st.button("Reset Password"):
-                if new_password and confirm_password:
-                    if new_password == confirm_password:
-                        # Call Supabase to update password
-                        response = supabase.auth.api.update_user(
-                            token, {"password": new_password}
-                        )
-                        if response.get("error"):
-                            st.error("Error resetting password. Try again.")
-                        else:
-                            st.success(
-                                "Password reset successfully! You can now log in."
-                            )
-                    else:
-                        st.error("Passwords do not match!")
-                else:
-                    st.warning("Please enter your new password.")
-
-        # Display the password reset form
-        display_reset_password_form(supabase, token, email)
-
-        # Stop execution to prevent showing the rest of the app
-        st.stop()
 
     st.markdown(
         '<h1 class="main-header">🔮 The Oracle - I Ching Interpreter</h1>',
@@ -614,7 +529,7 @@ def main():
                     )
 
                 # Change Password Section
-                display_change_password_section(supabase, st.session_state.access_token)
+                display_change_password_section(supabase)
 
                 # Add a separator
                 st.markdown(
